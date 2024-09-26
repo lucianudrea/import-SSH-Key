@@ -1,36 +1,36 @@
 #!/bin/bash
 
-# Verifică dacă au fost furnizați cei doi parametri
+# Check if two parameters were provided
 if [ "$#" -ne 2 ]; then
-    echo "Utilizare: $0 <github_user> <local_user>"
+    echo "Usage: $0 <github_user> <local_user>"
     exit 1
 fi
 
-# Parametrii de intrare
-USER_GITHUB=$1  # Numele de utilizator GitHub (primul parametru)
-USER_LOCAL=$2   # Numele de utilizator local pe server (al doilea parametru)
+# Input parameters
+USER_GITHUB=$1  # GitHub username (first parameter)
+USER_LOCAL=$2   # Local username on the server (second parameter)
 
-# Setează calea corectă pentru directorul .ssh în funcție de utilizatorul local
+# Set the correct path for the .ssh directory based on the local user
 if [ "$USER_LOCAL" == "root" ]; then
     SSH_DIR="/root/.ssh"
 else
     SSH_DIR="/home/$USER_LOCAL/.ssh"
 fi
 
-# Creează directorul .ssh dacă nu există deja
+# Create the .ssh directory if it doesn't already exist
 mkdir -p $SSH_DIR
 
-# Obține și adaugă cheile SSH din GitHub în authorized_keys
+# Fetch and append the GitHub user's SSH keys to authorized_keys
 curl https://github.com/$USER_GITHUB.keys >> $SSH_DIR/authorized_keys
 
-# Setează proprietarul corect al fișierelor și permisiunile
-# if [ "$USER_LOCAL" == "root" ]; then
-#     chown root:root $SSH_DIR/authorized_keys
-# else
+# Set the correct ownership and permissions for the files
+if [ "$USER_LOCAL" == "root" ]; then
+    chown root:root $SSH_DIR/authorized_keys
+else
     chown $USER_LOCAL:$USER_LOCAL $SSH_DIR/authorized_keys
-# fi
+fi
 
 chmod 600 $SSH_DIR/authorized_keys
 chmod 700 $SSH_DIR
 
-echo "Cheile SSH de la utilizatorul GitHub $USER_GITHUB au fost importate pentru utilizatorul local $USER_LOCAL."
+echo "SSH keys from GitHub user $USER_GITHUB have been imported for local user $USER_LOCAL."
